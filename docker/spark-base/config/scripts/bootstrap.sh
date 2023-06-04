@@ -3,6 +3,9 @@
 # Este trecho rodará independente de termos um container master ou
 # worker. Necesário para funcionamento do HDFS e para comunicação
 # dos containers/nodes.
+
+echo "Starting bootstrap script..."
+
 /etc/init.d/ssh start
 
 # Abaixo temos o trecho que rodará apenas no master.
@@ -16,7 +19,8 @@ if [[ $HOSTNAME = spark-master ]]; then
     $HADOOP_HOME/sbin/start-yarn.sh
 
     # Inicio do mysql - metastore o Hive
-    service mysql start
+    service mariadb stop
+    service mariadb start
 
     # Criação de diretórios no ambiente distribuído do HDFS
     hdfs dfs -mkdir /datasets
@@ -25,7 +29,7 @@ if [[ $HOSTNAME = spark-master ]]; then
     # Configs de Zookeeper
     touch /var/lib/zookeeper/myid
     echo "1" >> /var/lib/zookeeper/myid
-    ./usr/apache-zookeeper-3.6.1-bin/bin/zkServer.sh start
+    ./usr/apache-zookeeper-3.7.1-bin/bin/zkServer.sh start
 
     # Configs de Kafka
     # Adiciona quebra de linha ao fim do arquivp
@@ -38,11 +42,11 @@ if [[ $HOSTNAME = spark-master ]]; then
     mysql -u root -Bse \
     "CREATE DATABASE metastore; \
     USE metastore; \
-    SOURCE /usr/hive/scripts/metastore/upgrade/mysql/hive-schema-2.3.0.mysql.sql; \
+    SOURCE /usr/hive/scripts/metastore/upgrade/mysql/hive-schema-3.1.0.mysql.sql; \
     CREATE USER 'hive'@'localhost' IDENTIFIED BY 'password'; \
     REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'hive'@'localhost'; \
     GRANT ALL PRIVILEGES ON metastore.* TO 'hive'@'localhost' IDENTIFIED BY 'password'; \
-    FLUSH PRIVILEGES; quit;"
+    FLUSH PRIVILEGES;"
 
     # Caso mantenha notebooks personalizados na pasta que tem bind mount com o 
     # container /user_data, o trecho abaixo automaticamente fará o processo de 
@@ -77,7 +81,7 @@ else
     $HADOOP_HOME/bin/yarn nodemanager &
     
     # Inicio do serviço do Zookeeper
-    ./usr/apache-zookeeper-3.6.1-bin/bin/zkServer.sh start &
+    ./usr/apache-zookeeper-3.7.1-bin/bin/zkServer.sh start &
 
     # Início do Kafka
     ./usr/kafka/bin/kafka-server-start.sh ./usr/kafka/config/server.properties

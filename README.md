@@ -17,7 +17,7 @@ Alguns recursos deste mini-lab:
 - Jupyter (para modo interativo apenas)
 - Bibliotecas Python (vide `/docker/spark-base/jupyter/requirements.txt`)
 
-**TL;DR - Quero saber apenas <a href="https://github.com/gbieul/spark-cluster/tree/master#15-como-usar">como usar</a>**
+**TL;DR - Quero saber apenas <a href="https://github.com/luizhenriquemm/spark-cluster/tree/master#15-como-usar">como usar</a>**
 
 
 ## 1.1. - A árvore do diretório
